@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Google Links ⇄ IDs Converter</title>
+<title>Google Link ⇄ ID Converter</title>
 <style>
 :root {
   --bg: #0b0f1a;
@@ -129,20 +129,35 @@ button.secondary:disabled {
 }
 
 .copy-btn {
-  display: block;
+  display: flex;
+  align-items: center;
   width: 100%;
   margin: 6px 0;
-  padding: 8px;
+  padding: 8px 12px;
   border: none;
   border-radius: 12px;
   background: #1b2142;
   color: var(--accent2);
   text-align: left;
   cursor: pointer;
+  font-family: monospace;
 }
 
 .copy-btn:hover {
   background: #272f57;
+}
+
+.copy-btn.active {
+  background: #ff2a6d;
+  color: #000;
+}
+
+.copy-btn span.number {
+  display: inline-block;
+  width: 24px;
+  font-weight: bold;
+  margin-right: 8px;
+  color: var(--accent2);
 }
 
 .footer {
@@ -157,8 +172,8 @@ button.secondary:disabled {
 <body>
 
 <div class="card">
-  <h1>🔁 Google Links ⇄ IDs</h1>
-  <div class="subtitle">Jede ID einzeln kopierbar • ESC = Clear</div>
+  <h1>🔁 Google Link ⇄ ID</h1>
+  <div class="subtitle">Jede ID einzeln kopierbar • Nummerierung • ESC = Clear</div>
 
   <div class="input-wrapper">
     <input id="input" placeholder="Link(s) oder ID(s) einfügen">
@@ -183,6 +198,7 @@ const undoBtn = document.getElementById("undoBtn");
 let lastInput = "";
 let lastResult = "";
 let hasUndo = false;
+let lastCopiedBtn = null;
 
 // ESC löscht Feld
 input.addEventListener("keydown", e => {
@@ -214,6 +230,7 @@ function undo(){
 function clearResult(){
   result.innerHTML = "–";
   lastResult = "";
+  lastCopiedBtn = null;
 }
 
 // --- Detect ---
@@ -235,7 +252,7 @@ function detect(autoCopy=false){
     if(/^[a-zA-Z0-9_-]{20,}$/.test(w)) ids.push(w);
   });
 
-  // Doppelte entfernen, **Reihenfolge beibehalten**
+  // Doppelte entfernen, Reihenfolge beibehalten
   ids = ids.filter((v,i,a)=>a.indexOf(v)===i);
 
   if(ids.length===0){
@@ -247,15 +264,20 @@ function detect(autoCopy=false){
   result.className = "result good";
   setUndo(text);
 
-  // Ausgabe: jede ID als einzelner Button
+  // Ausgabe: jede ID als einzelner Button mit Nummerierung
   result.innerHTML = "";
-  ids.forEach(id=>{
+  ids.forEach((id,index)=>{
     let btn = document.createElement("button");
     btn.className = "copy-btn";
-    // Entscheide, ob Link oder ID gezeigt wird
     let content = text.includes(id) && /\/d\//.test(text) ? id : `https://drive.google.com/file/d/${id}/view`;
-    btn.textContent = content;
-    btn.onclick = () => navigator.clipboard.writeText(content);
+    btn.innerHTML = `<span class="number">${index+1}</span>${content}`;
+    btn.onclick = () => {
+      navigator.clipboard.writeText(content);
+      // Markiere als kopiert
+      if(lastCopiedBtn) lastCopiedBtn.classList.remove("active");
+      btn.classList.add("active");
+      lastCopiedBtn = btn;
+    };
     result.appendChild(btn);
   });
 
@@ -274,3 +296,4 @@ function copyAll(){
 
 </body>
 </html>
+
