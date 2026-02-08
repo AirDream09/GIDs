@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Link ⇄ ID Converter</title>
+
+<style>
+:root {
+  --bg: #0b0f1a;
+  --card: #12182b;
+  --accent: #ff2a6d;
+  --accent2: #8b5cf6;
+  --text: #ffffff;
+  --muted: #9aa4c7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: system-ui, sans-serif;
+  background: radial-gradient(circle at top, #151a35, var(--bg));
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(180deg, #151c36, var(--card));
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+}
+
+h1 {
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+input {
+  width: 100%;
+  padding: 16px;
+  font-size: 1rem;
+  border-radius: 14px;
+  border: none;
+  outline: none;
+  background: #0e1428;
+  color: var(--text);
+}
+
+input:focus {
+  box-shadow: 0 0 0 2px rgba(139,92,246,0.4);
+}
+
+.result {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #0d1326;
+  min-height: 60px;
+  word-break: break-all;
+  font-size: 0.95rem;
+}
+
+.good { border-left: 4px solid var(--accent2); }
+.bad  { border-left: 4px solid var(--accent); }
+
+button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+  font-size: 1rem;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+.footer {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>🔁 Google Link ⇄ ID</h1>
+  <div class="subtitle">Einfügen → automatisch erkennen → kopieren</div>
+
+  <input
+    id="input"
+    placeholder="Google-Link oder Google-ID einfügen"
+    oninput="detect()"
+  >
+
+  <div id="result" class="result">–</div>
+
+  <button onclick="copy()">📋 Ergebnis kopieren</button>
+
+  <div class="footer">Offline • Mobile-friendly • Clean</div>
+</div>
+
+<script>
+let last = "";
+
+function detect() {
+  const v = input.value.trim();
+  const r = result;
+
+  if (!v) {
+    r.textContent = "–";
+    r.className = "result";
+    last = "";
+    return;
+  }
+
+  const d = v.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  const q = v.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  const id = d ? d[1] : q ? q[1] : null;
+
+  if (id) {
+    r.textContent = "Google-ID:\n" + id;
+    r.className = "result good";
+    last = id;
+    return;
+  }
+
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(v)) {
+    const link = "https://drive.google.com/file/d/" + v + "/view";
+    r.textContent = "Google-Link:\n" + link;
+    r.className = "result good";
+    last = link;
+    return;
+  }
+
+  r.textContent = "❌ Kein gültiger Google-Link oder keine ID erkannt";
+  r.className = "result bad";
+  last = "";
+}
+
+function copy() {
+  if (!last) return;
+  navigator.clipboard.writeText(last);
+  result.textContent = "✅ Kopiert:\n" + last;
+}
+</script>
+
+</body>
+</html>
+
+
+
